@@ -1,11 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { 
-  Calendar, Search, Clock, Baby, CheckCircle2, AlertCircle, CalendarDays, 
-  Phone, Plus, Trash2, X, UserCheck, Bell, Utensils, AlertTriangle, 
-  User, Edit2, ArrowRight, Upload, FileSpreadsheet, LogIn, Lock, Mail, LogOut, UserPlus 
-} from 'lucide-react';
+import { Calendar, Search, Clock, Baby, CheckCircle2, AlertCircle, CalendarDays, Phone, Plus, Trash2, X, UserCheck, Bell, Utensils, AlertTriangle, User, Edit2, ArrowRight, Upload, FileSpreadsheet } from 'lucide-react';
 
-// --- Estilos Globais e Animações ---
+// --- Styles for Font (Poppins) & Animation ---
 const styles = `
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
@@ -14,9 +10,7 @@ const styles = `
 }
 
 body {
-  background-color: #ffffff;
-  margin: 0;
-  color: #1e293b;
+  background-color: #f8fafc; /* Slate-50 */
 }
 
 @keyframes fadeIn {
@@ -38,29 +32,23 @@ body {
   animation: pulse-soft 3s infinite ease-in-out;
 }
 
-input:focus {
-  outline: none;
-}
-
-/* Custom scrollbar */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #f8fafc;
+  background: #f1f5f9; 
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
+  background: #94a3b8; 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b; 
 }
 `;
 
-// --- Tipos ---
-type UserData = {
-  email: string;
-  password: string;
-};
-
+// --- Types ---
 type Patient = {
   id: string;
   name: string;
@@ -80,201 +68,39 @@ type ComputedPatient = Patient & {
   isSixMonthVisit: boolean;
 };
 
-// --- Componente de Autenticação (Login e Cadastro) ---
-const AuthScreen = ({ 
-  onLogin, 
-  registeredUsers, 
-  setRegisteredUsers 
-}: { 
-  onLogin: () => void, 
-  registeredUsers: UserData[], 
-  setRegisteredUsers: (users: UserData[]) => void 
-}) => {
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+// --- Mock Data (Empty for Production) ---
+const INITIAL_DATA: Patient[] = [];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    if (isRegistering) {
-      if (email.length < 5 || password.length < 4) {
-        setError('E-mail ou senha muito curtos.');
-        return;
-      }
-      if (password !== confirmPassword) {
-        setError('As senhas não coincidem.');
-        return;
-      }
-      if (registeredUsers.find(u => u.email === email)) {
-        setError('Este e-mail já está cadastrado.');
-        return;
-      }
-
-      const newUser = { email, password };
-      setRegisteredUsers([...registeredUsers, newUser]);
-      setSuccess('Conta criada com sucesso! Faça o login agora.');
-      setIsRegistering(false);
-      setPassword('');
-      setConfirmPassword('');
-    } else {
-      const user = registeredUsers.find(u => u.email === email && u.password === password);
-      if (user) {
-        onLogin();
-      } else {
-        setError('E-mail ou senha incorretos.');
-      }
-    }
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-      <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-fade-in">
-        <div className="bg-slate-800 p-10 text-center text-white transition-all">
-          <div className="inline-flex bg-white/10 p-4 rounded-2xl mb-4 backdrop-blur-sm border border-white/20">
-            <Baby size={48} className="text-white" />
-          </div>
-          <h2 className="text-2xl font-bold tracking-tight">Puericultura Pro</h2>
-          <p className="text-slate-400 text-sm mt-1 font-light">
-            {isRegistering ? 'Crie sua conta administrativa' : 'Gerenciamento Clínico Restrito'}
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-8 space-y-5">
-          {error && (
-            <div className="bg-red-50 text-red-600 text-xs font-bold p-4 rounded-2xl flex items-center animate-fade-in">
-              <AlertCircle size={16} className="mr-2 flex-shrink-0" /> {error}
-            </div>
-          )}
-          {success && (
-            <div className="bg-emerald-50 text-emerald-700 text-xs font-bold p-4 rounded-2xl flex items-center animate-fade-in">
-              <CheckCircle2 size={16} className="mr-2 flex-shrink-0" /> {success}
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <div className="relative group">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-800 transition-colors" size={20} />
-              <input 
-                type="email" 
-                placeholder="E-mail"
-                className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:border-slate-400 focus:bg-white transition-all text-slate-700"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="relative group">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-800 transition-colors" size={20} />
-              <input 
-                type="password" 
-                placeholder="Senha"
-                className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:border-slate-400 focus:bg-white transition-all text-slate-700"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            {isRegistering && (
-              <div className="relative group animate-fade-in">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-800 transition-colors" size={20} />
-                <input 
-                  type="password" 
-                  placeholder="Confirme a senha"
-                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:border-slate-400 focus:bg-white transition-all text-slate-700"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-              </div>
-            )}
-          </div>
-
-          <button 
-            type="submit" 
-            className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-xl shadow-slate-200 transition-all active:scale-95 flex items-center justify-center mt-2"
-          >
-            {isRegistering ? (
-              <>Cadastrar <UserPlus size={20} className="ml-2" /></>
-            ) : (
-              <>Entrar <LogIn size={20} className="ml-2" /></>
-            )}
-          </button>
-
-          <div className="pt-6 border-t border-slate-100 text-center">
-            <button 
-              type="button" 
-              onClick={() => {
-                setIsRegistering(!isRegistering);
-                setError('');
-                setSuccess('');
-              }}
-              className="text-sm text-slate-500 hover:text-slate-800 font-semibold transition-colors"
-            >
-              {isRegistering ? 'Já possui conta? Faça login' : 'Ainda não tem conta? Registre-se'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-// --- Componente Principal ---
-export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+export default function PuericulturaApp() {
+  // --- State ---
   const [showSplash, setShowSplash] = useState(true);
-  
-  // --- Inicialização com LocalStorage ---
-  
-  // Usuários (Lê do localStorage ou inicia com admin)
-  const [registeredUsers, setRegisteredUsers] = useState<UserData[]>(() => {
-    const saved = localStorage.getItem('puericultura_users');
-    return saved ? JSON.parse(saved) : [{ email: 'admin@clinica.com', password: 'admin' }];
-  });
-
-  // Pacientes (Lê do localStorage ou inicia vazio)
-  const [patients, setPatients] = useState<Patient[]>(() => {
-    const saved = localStorage.getItem('puericultura_patients');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  // --- Efeitos de Persistência ---
-
-  useEffect(() => {
-    localStorage.setItem('puericultura_users', JSON.stringify(registeredUsers));
-  }, [registeredUsers]);
-
-  useEffect(() => {
-    localStorage.setItem('puericultura_patients', JSON.stringify(patients));
-  }, [patients]);
-
+  const [patients, setPatients] = useState<Patient[]>(INITIAL_DATA);
   const [filter, setFilter] = useState<'todos' | '0-12' | '12+' | 'atrasados' | 'intro-alim'>('todos');
   const [searchTerm, setSearchTerm] = useState('');
   
-  // Modais
+  // Modals
   const [showAddModal, setShowAddModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{show: boolean, patientId: string | null, patientName: string}>({ show: false, patientId: null, patientName: '' });
   const [checkInModal, setCheckInModal] = useState<{show: boolean, patientId: string | null, date: string}>({ show: false, patientId: null, date: '' });
 
-  // Formulários
+  // Forms
   const [newPatient, setNewPatient] = useState({ name: '', guardianName: '', phone: '', birthDate: '' });
 
-  // Refs
+  // Upload Ref
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Hoje (Fixado para consistência de demonstração)
-  const today = new Date(2025, 11, 18); 
+  // Data atual simulada (Dezembro 2025)
+  const today = new Date(2025, 11, 17);
   const todayStr = today.toISOString().split('T')[0];
 
+  // --- Effects ---
   useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 2500);
+    // Splash screen timer
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2500); 
 
+    // Load SheetJS for Excel support dynamically
     const script = document.createElement('script');
     script.src = "https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js";
     script.async = true;
@@ -282,20 +108,28 @@ export default function App() {
 
     return () => {
       clearTimeout(timer);
-      if (document.body.contains(script)) document.body.removeChild(script);
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
     };
   }, []);
 
-  // --- Funções Auxiliares ---
+  // --- Helpers ---
+
   const calculateAge = (birthDateStr: string) => {
     const birth = new Date(birthDateStr);
     let months = (today.getFullYear() - birth.getFullYear()) * 12 + (today.getMonth() - birth.getMonth());
     if (today.getDate() < birth.getDate()) months--;
+    
     if (months < 0) return { months: 0, text: "Recém-nascido" };
+    
     const years = Math.floor(months / 12);
     const remainingMonths = months % 12;
-    let text = years > 0 ? `${years}a ` : "";
+    
+    let text = "";
+    if (years > 0) text += `${years}a `;
     text += `${remainingMonths}m`;
+    
     return { months, text };
   };
 
@@ -303,11 +137,15 @@ export default function App() {
     const birth = new Date(birthDateStr);
     let nextDate = new Date(birth);
     let rule = "";
+
     if (ageMonths < 12) {
       let targetMonth = 0;
       while (true) {
         const d = new Date(birth.getFullYear(), birth.getMonth() + targetMonth, birth.getDate());
-        if (d >= today) { nextDate = d; break; }
+        if (d >= today) {
+          nextDate = d;
+          break;
+        }
         targetMonth++;
       }
       rule = "Mensal";
@@ -315,7 +153,10 @@ export default function App() {
       let targetMonth = 12;
       while (true) {
         const d = new Date(birth.getFullYear(), birth.getMonth() + targetMonth, birth.getDate());
-        if (d >= today) { nextDate = d; break; }
+        if (d >= today) {
+          nextDate = d;
+          break;
+        }
         targetMonth += 3;
       }
       rule = "Trimestral";
@@ -326,6 +167,7 @@ export default function App() {
   const getStatus = (dueDate: Date): ComputedPatient['status'] => {
     const diffTime = dueDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
     if (diffDays < 0) return 'atrasado';
     if (diffDays <= 7) return 'proximo';
     if (diffDays <= 30) return 'em_dia';
@@ -335,10 +177,12 @@ export default function App() {
   const checkInIsCurrent = (lastCheckIn?: string) => {
     if (!lastCheckIn) return false;
     const checkInDate = new Date(lastCheckIn);
-    return checkInDate.getMonth() === today.getMonth() && checkInDate.getFullYear() === today.getFullYear();
+    return checkInDate.getMonth() === today.getMonth() && 
+           checkInDate.getFullYear() === today.getFullYear();
   };
 
-  // --- Handlers de Ação ---
+  // --- Actions ---
+
   const handleAddPatient = () => {
     if (!newPatient.name || !newPatient.birthDate) return;
     const id = Math.random().toString(36).substr(2, 9);
@@ -347,80 +191,8 @@ export default function App() {
     setShowAddModal(false);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
-    if (isExcel) {
-      reader.onload = (evt) => {
-        const XLSX = (window as any).XLSX;
-        if (!XLSX) return;
-        try {
-          const workbook = XLSX.read(evt.target?.result, { type: 'array' });
-          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-          processImportData(jsonData);
-        } catch (e) { alert("Erro ao ler Excel."); }
-      };
-      reader.readAsArrayBuffer(file);
-    } else {
-      reader.onload = (evt) => {
-        const lines = (evt.target?.result as string).split(/\r?\n/).map(l => l.split(','));
-        processImportData(lines);
-      };
-      reader.readAsText(file);
-    }
-    e.target.value = '';
-  };
-
-  const processImportData = (rows: any[][]) => {
-    if (rows.length < 2) return;
-    const headers = rows[0].map(h => String(h).trim().toLowerCase());
-    const idxName = headers.findIndex(h => h.includes('paciente') || h.includes('nome'));
-    const idxBirth = headers.findIndex(h => h.includes('nascimento') || h.includes('data'));
-    const idxPhone = headers.findIndex(h => h.includes('celular') || h.includes('telefone'));
-    const idxGuardian = headers.findIndex(h => h.includes('respons') || h.includes('mae'));
-    
-    if (idxName === -1 || idxBirth === -1) { alert("Cabeçalho não reconhecido."); return; }
-    
-    const entries: Patient[] = [];
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i];
-      if (!row || !row[idxName]) continue;
-      let birth = String(row[idxBirth]);
-      if (birth.match(/^\d{1,2}[\/-]\d{1,2}[\/-]\d{4}$/)) {
-        const p = birth.split(/[\/-]/);
-        birth = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
-      }
-      entries.push({
-        id: Math.random().toString(36).substr(2, 9),
-        name: String(row[idxName]),
-        birthDate: birth,
-        phone: idxPhone !== -1 ? String(row[idxPhone]) : '',
-        guardianName: idxGuardian !== -1 ? String(row[idxGuardian]) : ''
-      });
-    }
-    setPatients(p => [...p, ...entries]);
-  };
-
-  const handleConfirmCheckIn = () => {
-    if (checkInModal.patientId && checkInModal.date) {
-      setPatients(patients.map(p => {
-        if (p.id === checkInModal.patientId) return { ...p, lastCheckIn: checkInModal.date };
-        return p;
-      }));
-      setCheckInModal({ show: false, patientId: null, date: '' });
-    }
-  };
-
-  const handleUndoCheckIn = (id: string) => {
-    if(confirm("Deseja remover o check-in?")) {
-      setPatients(patients.map(p => {
-        if (p.id === id) return { ...p, lastCheckIn: undefined };
-        return p;
-      }));
-    }
+  const confirmDelete = (patient: Patient) => {
+    setDeleteModal({ show: true, patientId: patient.id, patientName: patient.name });
   };
 
   const handleDeleteConfirmed = () => {
@@ -430,310 +202,611 @@ export default function App() {
     }
   };
 
+  const openCheckInModal = (patientId: string) => {
+    setCheckInModal({ show: true, patientId, date: todayStr });
+  };
+
+  const handleConfirmCheckIn = () => {
+    if (checkInModal.patientId && checkInModal.date) {
+      setPatients(patients.map(p => {
+        if (p.id === checkInModal.patientId) {
+          return { ...p, lastCheckIn: checkInModal.date };
+        }
+        return p;
+      }));
+      setCheckInModal({ show: false, patientId: null, date: '' });
+    }
+  };
+
+  const handleUndoCheckIn = (id: string) => {
+    if(confirm("Deseja remover o registro da consulta deste mês?")) {
+      setPatients(patients.map(p => {
+        if (p.id === id) {
+          return { ...p, lastCheckIn: undefined };
+        }
+        return p;
+      }));
+    }
+  };
+
+  // --- Import Logic ---
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
+
+    if (isExcel) {
+      reader.onload = (evt) => {
+        const data = evt.target?.result;
+        if (!data) return;
+        
+        // Using dynamic XLSX from window
+        const XLSX = (window as any).XLSX;
+        if (!XLSX) {
+          alert("Biblioteca de Excel ainda carregando... Tente novamente em alguns segundos.");
+          return;
+        }
+
+        try {
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          // Convert to JSON (array of arrays to handle headers easily)
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          processImportData(jsonData);
+        } catch (error) {
+          console.error(error);
+          alert("Erro ao ler arquivo Excel. Verifique se o formato está correto.");
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      // CSV/Text fallback
+      reader.onload = (evt) => {
+        const text = evt.target?.result as string;
+        const lines = text.split(/\r?\n/).map(line => line.split(','));
+        processImportData(lines);
+      };
+      reader.readAsText(file);
+    }
+
+    // Reset input
+    e.target.value = '';
+  };
+
+  const processImportData = (rows: any[][]) => {
+    if (rows.length < 2) {
+        alert("O arquivo parece estar vazio ou sem dados.");
+        return;
+    }
+
+    // Headers - normalize to lowercase and remove extra spaces/quotes
+    const headers = rows[0].map(h => String(h).trim().toLowerCase().replace(/"/g, ''));
+    
+    // Find column indexes
+    const idxName = headers.findIndex(h => h.includes('paciente') || h.includes('nome'));
+    const idxBirth = headers.findIndex(h => h.includes('nascimento') || h.includes('data'));
+    const idxPhone = headers.findIndex(h => h.includes('celular') || h.includes('telefone') || h.includes('whatsapp') || h.includes('contato'));
+    const idxGuardian = headers.findIndex(h => h.includes('respons') || h.includes('mae') || h.includes('pai'));
+
+    if (idxName === -1 || idxBirth === -1) {
+        alert("Erro: Não foi possível identificar as colunas 'Paciente' e 'Nascimento' no arquivo. Verifique o cabeçalho.");
+        return;
+    }
+
+    const newEntries: Patient[] = [];
+    let errors = 0;
+
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row.length === 0) continue;
+        
+        // Ensure row has enough columns
+        if (row.length <= Math.max(idxName, idxBirth)) continue;
+
+        const name = String(row[idxName] || '').trim().replace(/^"|"$/g, '');
+        let birthDateRaw = row[idxBirth];
+        const phone = idxPhone !== -1 ? String(row[idxPhone] || '').trim().replace(/^"|"$/g, '') : '';
+        const guardianName = idxGuardian !== -1 ? String(row[idxGuardian] || '').trim().replace(/^"|"$/g, '') : '';
+
+        if (!name || !birthDateRaw) {
+            continue;
+        }
+
+        // Handle Excel Date serial numbers (if it comes as number)
+        let birthDate = '';
+        if (typeof birthDateRaw === 'number') {
+             // Excel date to JS Date approx conversion
+             const date = new Date(Math.round((birthDateRaw - 25569)*86400*1000));
+             birthDate = date.toISOString().split('T')[0];
+        } else {
+             // String handling
+             birthDate = String(birthDateRaw).trim().replace(/^"|"$/g, '');
+             // DD/MM/YYYY to YYYY-MM-DD
+             if (birthDate.match(/^\d{1,2}[\/-]\d{1,2}[\/-]\d{4}$/)) {
+                const parts = birthDate.split(/[\/-]/);
+                birthDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+             }
+        }
+
+        if (birthDate) {
+            newEntries.push({
+                id: Math.random().toString(36).substr(2, 9),
+                name,
+                birthDate,
+                phone,
+                guardianName
+            });
+        }
+    }
+
+    if (newEntries.length > 0) {
+        setPatients(prev => [...prev, ...newEntries]);
+        alert(`${newEntries.length} pacientes importados com sucesso!`);
+    } else {
+        alert("Nenhum paciente válido encontrado no arquivo.");
+    }
+  };
+
+  // --- Processed Data ---
+  
   const processedData = useMemo(() => {
     return patients.map(p => {
       const { months, text } = calculateAge(p.birthDate);
       const { date: nextDueDate, rule } = calculateNextDue(p.birthDate, months);
       const status = getStatus(nextDueDate);
       const isCheckedInThisMonth = checkInIsCurrent(p.lastCheckIn);
+      
       const birth = new Date(p.birthDate);
       const ageAtNextVisit = (nextDueDate.getFullYear() - birth.getFullYear()) * 12 + (nextDueDate.getMonth() - birth.getMonth());
-      return { 
-        ...p, 
-        ageString: text, 
-        ageMonths: months, 
-        nextDueDate, 
-        rule, 
-        status, 
-        isCheckedInThisMonth, 
-        isSixMonthVisit: ageAtNextVisit === 6 
+      const isSixMonthVisit = ageAtNextVisit === 6;
+      
+      return {
+        ...p,
+        ageString: text,
+        ageMonths: months,
+        nextDueDate,
+        rule,
+        status,
+        isCheckedInThisMonth,
+        isSixMonthVisit
       } as ComputedPatient;
     })
     .filter(p => {
-      const s = searchTerm.toLowerCase();
-      if (!(p.name.toLowerCase().includes(s) || p.guardianName?.toLowerCase().includes(s))) return false;
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = p.name.toLowerCase().includes(searchLower) || 
+                            (p.guardianName && p.guardianName.toLowerCase().includes(searchLower));
+      
+      if (!matchesSearch) return false;
+
       if (filter === '0-12') return p.ageMonths < 12;
       if (filter === '12+') return p.ageMonths >= 12;
       if (filter === 'atrasados') return p.status === 'atrasado' && !p.isCheckedInThisMonth;
       if (filter === 'intro-alim') return p.isSixMonthVisit && !p.isCheckedInThisMonth;
       return true;
     })
-    .sort((a, b) => a.isCheckedInThisMonth === b.isCheckedInThisMonth ? a.nextDueDate.getTime() - b.nextDueDate.getTime() : (a.isCheckedInThisMonth ? 1 : -1));
+    .sort((a, b) => {
+        if (a.isCheckedInThisMonth !== b.isCheckedInThisMonth) {
+            return a.isCheckedInThisMonth ? 1 : -1;
+        }
+        return a.nextDueDate.getTime() - b.nextDueDate.getTime();
+    });
   }, [patients, filter, searchTerm, today]);
 
+  const stats = {
+    total: patients.length,
+    dueThisWeek: processedData.filter(p => p.status === 'proximo' && !p.isCheckedInThisMonth).length,
+    late: processedData.filter(p => p.status === 'atrasado' && !p.isCheckedInThisMonth).length,
+    checkedIn: processedData.filter(p => p.isCheckedInThisMonth).length,
+    introAlim: processedData.filter(p => p.isSixMonthVisit && !p.isCheckedInThisMonth).length
+  };
+
   // --- Views ---
+
   if (showSplash) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center font-sans">
         <style>{styles}</style>
-        <div className="bg-white p-10 rounded-full shadow-xl mb-6 animate-pulse-soft border-4 border-slate-100">
-          <Baby size={80} className="text-slate-800" />
+        <div className="bg-white p-10 rounded-full shadow-xl mb-6 animate-pulse-soft border-4 border-blue-100">
+          <Baby size={80} className="text-blue-600" />
         </div>
-        <h1 className="text-4xl font-bold text-slate-900 animate-fade-in tracking-tight">Puericultura</h1>
-        <p className="text-slate-400 mt-2 text-lg animate-fade-in font-medium">Gestão Profissional</p>
+        <h1 className="text-4xl font-bold text-blue-900 animate-fade-in tracking-tight">Puericultura</h1>
+        <p className="text-slate-500 mt-2 text-lg animate-fade-in font-medium" style={{animationDelay: '0.2s'}}>Gestão Profissional</p>
       </div>
     );
   }
 
-  if (!isLoggedIn) {
-    return (
-      <>
-        <style>{styles}</style>
-        <AuthScreen 
-          onLogin={() => setIsLoggedIn(true)} 
-          registeredUsers={registeredUsers}
-          setRegisteredUsers={setRegisteredUsers}
-        />
-      </>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-20">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
       <style>{styles}</style>
-      <input type="file" accept=".csv,.txt,.xlsx,.xls" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
+      
+      {/* Hidden File Input */}
+      <input 
+        type="file" 
+        accept=".csv,.txt,.xlsx,.xls"
+        className="hidden" 
+        ref={fileInputRef}
+        onChange={handleFileChange}
+      />
 
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="bg-slate-800 p-2.5 rounded-xl text-white shadow-md">
+            <div className="bg-blue-600 p-2.5 rounded-xl text-white shadow-md shadow-blue-200">
               <Baby size={28} />
             </div>
-            <div className="hidden sm:block">
-              <h1 className="text-2xl font-bold text-slate-800 tracking-tight leading-none">Painel Clínico</h1>
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Status do Consultório</p>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Puericultura</h1>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Controle Clínico</p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:flex flex-col items-end mr-4">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Check-ins do Mês</span>
-              <span className="text-xl font-bold text-emerald-600 leading-none">
-                {processedData.filter(p => p.isCheckedInThisMonth).length}
-              </span>
+          <div className="flex items-center space-x-4 md:space-x-8">
+            <div className="flex flex-col items-end hidden sm:flex">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Confirmados</span>
+              <span className="text-2xl font-bold text-emerald-600 leading-none">{stats.checkedIn}</span>
             </div>
+            <div className="h-10 w-px bg-slate-200 hidden sm:block"></div>
             
-            <button 
-              onClick={() => setIsLoggedIn(false)}
-              className="p-2.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"
-              title="Encerrar Sessão"
-            >
-              <LogOut size={24} />
-            </button>
-            <div className="h-8 w-px bg-slate-200 mx-2"></div>
-            <button 
-              onClick={() => setShowAddModal(true)}
-              className="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-semibold flex items-center shadow-lg transition-all active:scale-95"
-            >
-              <Plus size={20} className="mr-2" /> Novo Bebê
-            </button>
+            <div className="relative group cursor-pointer">
+                <Bell className={`text-slate-400 group-hover:text-blue-600 transition-colors ${stats.late > 0 ? 'animate-pulse text-red-500' : ''}`} size={26} />
+                {stats.late > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm">
+                        {stats.late}
+                    </span>
+                )}
+            </div>
+
+            <div className="flex gap-2">
+                <button 
+                    onClick={handleImportClick}
+                    className="bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center shadow-sm transition-all"
+                    title="Importar Excel ou CSV"
+                >
+                    <FileSpreadsheet size={20} className="mr-2 text-emerald-600" />
+                    Importar
+                </button>
+                <button 
+                    onClick={() => setShowAddModal(true)}
+                    className="bg-blue-700 hover:bg-blue-800 text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center shadow-lg shadow-blue-100 transition-all hover:scale-105 active:scale-95"
+                >
+                    <Plus size={20} className="mr-2" />
+                    Novo
+                </button>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         
-        {/* Widgets de Estatística */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex items-center space-x-4">
-            <div className="bg-slate-100 p-3 rounded-2xl text-slate-600"><User size={24}/></div>
-            <div><p className="text-xs text-slate-500 font-medium">Cadastros</p><p className="text-xl font-bold">{patients.length}</p></div>
-          </div>
-          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex items-center space-x-4">
-            <div className="bg-emerald-50 p-3 rounded-2xl text-emerald-600"><CheckCircle2 size={24}/></div>
-            <div><p className="text-xs text-slate-500 font-medium">Finalizados</p><p className="text-xl font-bold text-emerald-600">{processedData.filter(p => p.isCheckedInThisMonth).length}</p></div>
-          </div>
-          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex items-center space-x-4">
-            <div className="bg-orange-50 p-3 rounded-2xl text-orange-600"><Utensils size={24}/></div>
-            <div><p className="text-xs text-slate-500 font-medium">Intro Alim.</p><p className="text-xl font-bold">{processedData.filter(p => p.isSixMonthVisit && !p.isCheckedInThisMonth).length}</p></div>
-          </div>
-          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex items-center space-x-4">
-            <div className="bg-red-50 p-3 rounded-2xl text-red-600"><AlertCircle size={24}/></div>
-            <div><p className="text-xs text-slate-500 font-medium">Atrasados</p><p className="text-xl font-bold text-red-600">{processedData.filter(p => p.status === 'atrasado' && !p.isCheckedInThisMonth).length}</p></div>
-          </div>
-        </div>
-
-        {/* Controles do Dashboard */}
-        <div className="flex flex-col lg:flex-row justify-between items-center mb-8 gap-4">
-          <div className="relative w-full lg:w-96 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-800 transition-colors" />
+        {/* Controls */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0 gap-4">
+          <div className="relative w-full md:w-96 group">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+            </div>
             <input
               type="text"
-              className="block w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-2xl bg-white text-slate-700 placeholder-slate-400 focus:border-slate-400 shadow-sm"
-              placeholder="Nome ou responsável..."
+              className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-lg bg-white text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm shadow-sm transition-all"
+              placeholder="Buscar por nome..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
-          <div className="flex overflow-x-auto pb-2 lg:pb-0 gap-2 w-full lg:w-auto">
-            <button onClick={() => setFilter('todos')} className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${filter === 'todos' ? 'bg-slate-800 text-white' : 'bg-white border border-slate-200 text-slate-600'}`}>Todos</button>
-            <button onClick={() => setFilter('0-12')} className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${filter === '0-12' ? 'bg-slate-200 text-slate-800' : 'bg-white border border-slate-200 text-slate-600'}`}>Bebês</button>
-            <button onClick={() => setFilter('12+')} className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${filter === '12+' ? 'bg-slate-200 text-slate-800' : 'bg-white border border-slate-200 text-slate-600'}`}>1+ Ano</button>
-            <button onClick={() => setFilter('intro-alim')} className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${filter === 'intro-alim' ? 'bg-orange-100 text-orange-700' : 'bg-white border border-slate-200 text-slate-600'}`}>IA</button>
-            <button onClick={() => setFilter('atrasados')} className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${filter === 'atrasados' ? 'bg-red-100 text-red-700' : 'bg-white border border-slate-200 text-slate-600'}`}>Atrasados</button>
-            <button onClick={() => fileInputRef.current?.click()} className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center ml-2 hover:bg-emerald-100 transition-colors">
-              <FileSpreadsheet size={18} className="mr-2" /> Planilha
+          <div className="flex overflow-x-auto pb-2 md:pb-0 gap-2 w-full md:w-auto px-1">
+            <button onClick={() => setFilter('todos')} className={`px-5 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${filter === 'todos' ? 'bg-slate-800 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>Todos</button>
+            <button onClick={() => setFilter('0-12')} className={`px-5 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${filter === '0-12' ? 'bg-blue-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-blue-50 hover:text-blue-600'}`}>0-12 Meses</button>
+            <button onClick={() => setFilter('12+')} className={`px-5 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${filter === '12+' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600'}`}>12+ Meses</button>
+            
+            <button onClick={() => setFilter('intro-alim')} className={`px-5 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center transition-all ${filter === 'intro-alim' ? 'bg-orange-500 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-orange-50 hover:text-orange-600'}`}>
+                <Utensils size={16} className="mr-2" /> IA ({stats.introAlim})
+            </button>
+            
+            <button onClick={() => setFilter('atrasados')} className={`px-5 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center transition-all ${filter === 'atrasados' ? 'bg-red-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600'}`}>
+                <AlertCircle size={16} className="mr-2" /> Atrasados
             </button>
           </div>
         </div>
 
-        {/* Grid de Pacientes */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {processedData.map((patient) => (
-            <div 
-              key={patient.id} 
-              className={`bg-white rounded-3xl border border-slate-200 p-6 transition-all relative overflow-hidden group shadow-sm hover:shadow-lg ${patient.isCheckedInThisMonth ? 'bg-slate-50/50 grayscale-[0.5]' : ''}`}
-            >
-              {patient.isCheckedInThisMonth && (
-                <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-2xl">FINALIZADO</div>
-              )}
-              
-              <div className="flex items-start justify-between mb-4">
-                <div className={`p-4 rounded-2xl ${patient.isCheckedInThisMonth ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-800'}`}>
-                  {patient.isCheckedInThisMonth ? <CheckCircle2 size={24} /> : <Baby size={24} />}
-                </div>
-                <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => setCheckInModal({show:true, patientId:patient.id, date:todayStr})} className="p-2 text-slate-400 hover:text-slate-800 transition-colors"><Edit2 size={16}/></button>
-                  <button onClick={() => setDeleteModal({show: true, patientId: patient.id, patientName: patient.name})} className="p-2 text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
-                </div>
-              </div>
+        {/* List */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="min-w-full divide-y divide-slate-100">
+            <div className="bg-slate-50 grid grid-cols-1 md:grid-cols-12 gap-4 px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider hidden md:grid">
+              <div className="col-span-4">Paciente / Responsável</div>
+              <div className="col-span-2">Frequência</div>
+              <div className="col-span-3">Previsão</div>
+              <div className="col-span-3 text-right">Ações</div>
+            </div>
 
-              <h3 className={`text-lg font-bold leading-tight truncate ${patient.isCheckedInThisMonth ? 'text-slate-400 line-through' : 'text-slate-800'}`}>{patient.name}</h3>
-              <p className="text-xs text-slate-500 mt-1 font-medium">{patient.guardianName || 'Responsável não informado'}</p>
-
-              <div className="flex flex-wrap gap-2 mt-4">
-                <span className="text-[10px] bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-bold uppercase tracking-wider">{patient.ageString}</span>
-                <span className={`text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider ${patient.rule === 'Mensal' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-500'}`}>{patient.rule}</span>
-              </div>
-
-              <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Agenda Retorno</p>
-                  <p className={`text-sm font-bold mt-0.5 ${patient.isCheckedInThisMonth ? 'text-emerald-500' : patient.status === 'atrasado' ? 'text-red-600' : 'text-slate-700'}`}>
-                    {patient.isCheckedInThisMonth ? 'Concluído' : new Date(patient.nextDueDate).toLocaleDateString('pt-BR', {day:'2-digit', month:'short'})}
-                  </p>
-                </div>
-                {!patient.isCheckedInThisMonth ? (
-                  <button 
-                    onClick={() => setCheckInModal({show:true, patientId:patient.id, date:todayStr})}
-                    className="bg-slate-800 text-white p-3 rounded-2xl hover:bg-slate-900 transition-all active:scale-90 shadow-md"
-                  >
-                    <UserCheck size={20} />
-                  </button>
-                ) : (
-                  <button 
-                    onClick={() => handleUndoCheckIn(patient.id)}
-                    className="bg-slate-200 text-slate-500 p-3 rounded-2xl hover:bg-red-50 hover:text-red-600 transition-all active:scale-90"
-                  >
-                    <X size={20} />
-                  </button>
-                )}
-              </div>
-
-              {!patient.isCheckedInThisMonth && patient.isSixMonthVisit && (
-                <div className="mt-4 bg-orange-50 border border-orange-100 p-4 rounded-2xl animate-pulse">
-                  <div className="flex items-center text-orange-700 text-[10px] font-bold uppercase mb-1">
-                    <Utensils size={14} className="mr-1.5"/> IA (6 Meses)
+            <div className="divide-y divide-slate-100">
+              {processedData.map((patient) => (
+                <div key={patient.id} className={`grid grid-cols-1 md:grid-cols-12 gap-6 px-8 py-6 items-center transition-all duration-200 ${patient.isCheckedInThisMonth ? 'bg-slate-50 opacity-60' : 'hover:bg-blue-50/30'}`}>
+                  
+                  {/* Paciente */}
+                  <div className="col-span-4 flex items-center">
+                    <div className={`h-12 w-12 rounded-xl flex items-center justify-center mr-4 flex-shrink-0 transition-colors border ${patient.isCheckedInThisMonth ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-blue-50 border-blue-100 text-blue-600'}`}>
+                      {patient.isCheckedInThisMonth ? <CheckCircle2 size={24} /> : <Baby size={24} />}
+                    </div>
+                    <div className="min-w-0">
+                      <div className={`text-base font-bold truncate ${patient.isCheckedInThisMonth ? 'text-emerald-700 line-through decoration-emerald-500/30' : 'text-slate-800'}`}>{patient.name}</div>
+                      
+                      {patient.guardianName && (
+                        <div className="text-xs text-slate-500 flex items-center mt-1">
+                          <User size={12} className="mr-1.5 text-slate-400" />
+                          <span className="font-medium">{patient.guardianName}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 font-medium flex items-center"><Phone size={8} className="mr-1" />{patient.phone}</span>
+                        <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100 font-bold">{patient.ageString}</span>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-[10px] text-orange-600 font-medium leading-tight">Lembrete: Paciente deve trazer fruta para esta consulta.</p>
+
+                  {/* Regra */}
+                  <div className="col-span-2 hidden md:block">
+                     <span className={`inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-md border ${patient.rule === 'Mensal' ? 'bg-purple-50 border-purple-100 text-purple-700' : 'bg-indigo-50 border-indigo-100 text-indigo-700'}`}>
+                        {patient.rule === 'Mensal' ? <Clock size={12} className="mr-1.5"/> : <CalendarDays size={12} className="mr-1.5"/>}
+                        {patient.rule}
+                     </span>
+                  </div>
+
+                  {/* Próximo Agendamento */}
+                  <div className="col-span-3">
+                    <div className="flex items-start">
+                      <div className={`mr-3 p-2 rounded-lg border hidden md:block ${
+                        patient.isCheckedInThisMonth ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
+                        patient.isSixMonthVisit ? 'bg-orange-50 border-orange-100 text-orange-600' :
+                        patient.status === 'atrasado' ? 'bg-red-50 border-red-100 text-red-600 animate-pulse' :
+                        patient.status === 'proximo' ? 'bg-amber-50 border-amber-100 text-amber-600' :
+                        'bg-slate-50 border-slate-200 text-slate-500'
+                      }`}>
+                        {patient.isSixMonthVisit && !patient.isCheckedInThisMonth ? <Utensils size={18} /> : <Calendar size={18} />}
+                      </div>
+                      <div>
+                        {/* Status Principal */}
+                        <div className={`text-sm font-bold ${
+                           patient.isCheckedInThisMonth ? 'text-emerald-600' :
+                           patient.status === 'atrasado' ? 'text-red-600' : 
+                           patient.status === 'proximo' ? 'text-amber-600' : 'text-slate-700'
+                        }`}>
+                          {patient.isCheckedInThisMonth ? 'Confirmado' : patient.nextDueDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                        </div>
+                        
+                        {/* Aviso de Última Consulta */}
+                        {patient.isCheckedInThisMonth && patient.lastCheckIn && (
+                            <div className="text-[10px] text-emerald-700 font-semibold mt-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 inline-block">
+                                Dia {new Date(patient.lastCheckIn).toLocaleDateString('pt-BR', { day: '2-digit' })}
+                            </div>
+                        )}
+
+                        {/* Aviso de Intro Alimentar */}
+                        {!patient.isCheckedInThisMonth && patient.isSixMonthVisit && (
+                            <div className="mt-1 bg-orange-50 border border-orange-200 rounded px-2 py-1 inline-block">
+                                <span className="text-[10px] text-orange-700 font-bold flex items-center">
+                                    🍎 Intro. Alimentar
+                                </span>
+                                <span className="text-[9px] text-orange-600 block leading-tight mt-0.5">
+                                    Trazer fruta
+                                </span>
+                            </div>
+                        )}
+
+                        <div className="text-[10px] text-slate-500 mt-1 font-medium">
+                           {!patient.isCheckedInThisMonth && !patient.isSixMonthVisit && (
+                                <>
+                                    {patient.status === 'atrasado' && 'Atrasado!'}
+                                    {patient.status === 'proximo' && 'Esta semana'}
+                                    {patient.status === 'em_dia' && 'Este mês'}
+                                    {patient.status === 'futuro' && 'Futuro'}
+                                </>
+                           )}
+                           {/* Aviso para próxima consulta após check-in */}
+                           {patient.isCheckedInThisMonth && (
+                               <span className="text-slate-400 block mt-0.5">
+                                   Retorno: {new Date(new Date(patient.nextDueDate).setMonth(patient.nextDueDate.getMonth() + 1)).toLocaleDateString('pt-BR', {month:'long'})}
+                               </span>
+                           )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Ações */}
+                  <div className="col-span-3 flex justify-end items-center gap-3">
+                    {patient.isCheckedInThisMonth ? (
+                         <div className="flex items-center gap-2">
+                             <button 
+                                onClick={() => openCheckInModal(patient.id)}
+                                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100"
+                                title="Editar data"
+                             >
+                                <Edit2 size={16} />
+                             </button>
+                             <button 
+                                onClick={() => handleUndoCheckIn(patient.id)}
+                                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-200 text-slate-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-all shadow-sm"
+                             >
+                                Desfazer
+                             </button>
+                         </div>
+                    ) : (
+                        <button 
+                            onClick={() => openCheckInModal(patient.id)}
+                            className="flex items-center px-4 py-2 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-100 transition-all"
+                        >
+                            <UserCheck size={16} className="mr-2" /> Check-in
+                        </button>
+                    )}
+
+                    <button 
+                        onClick={() => confirmDelete(patient)}
+                        className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Remover"
+                    >
+                        <Trash2 size={18} />
+                    </button>
+                  </div>
+
+                </div>
+              ))}
+              
+              {processedData.length === 0 && (
+                <div className="py-20 text-center">
+                    <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
+                        <Search className="text-slate-300" size={32}/>
+                    </div>
+                    <p className="text-slate-400 font-medium">Nenhum paciente encontrado</p>
                 </div>
               )}
             </div>
-          ))}
-        </div>
-
-        {processedData.length === 0 && (
-          <div className="text-center py-24 bg-white rounded-3xl border border-slate-200 shadow-sm mt-8 border-dashed">
-            <Baby size={48} className="mx-auto text-slate-200 mb-4" />
-            <h3 className="text-lg font-bold text-slate-400">Consultório vazio</h3>
-            <p className="text-sm text-slate-300">Cadastre o primeiro paciente ou importe sua planilha acima.</p>
           </div>
-        )}
+        </div>
       </main>
 
-      {/* --- Modais --- */}
-
-      {checkInModal.show && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 animate-fade-in border border-slate-100">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="bg-slate-100 p-3 rounded-2xl text-slate-800"><Calendar size={24}/></div>
-              <h3 className="text-xl font-bold text-slate-800 tracking-tight">Data do Atendimento</h3>
-            </div>
-            <input 
-              type="date" 
-              className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:border-slate-800 outline-none mb-8 text-slate-700 font-bold"
-              value={checkInModal.date}
-              onChange={(e) => setCheckInModal({...checkInModal, date: e.target.value})}
-            />
-            <div className="flex gap-3">
-              <button onClick={() => setCheckInModal({show:false, patientId:null, date:''})} className="flex-1 py-3.5 text-slate-400 font-bold hover:bg-slate-50 rounded-2xl transition-colors">Cancelar</button>
-              <button onClick={handleConfirmCheckIn} className="flex-1 py-3.5 bg-slate-800 text-white font-bold rounded-2xl shadow-lg flex items-center justify-center">Confirmar</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showAddModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in border border-slate-100">
-            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-xl text-slate-800 tracking-tight">Novo Cadastro</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600"><X size={24}/></button>
-            </div>
-            <div className="p-8 space-y-5">
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase ml-2 mb-1 block">Nome do Bebê</label>
-                <input 
-                  type="text" 
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:border-slate-800 outline-none text-slate-700 font-medium"
-                  placeholder="Nome completo..."
-                  value={newPatient.name}
-                  onChange={(e) => setNewPatient({...newPatient, name: e.target.value})}
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase ml-2 mb-1 block">Responsável</label>
-                <input 
-                  type="text" 
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:border-slate-800 outline-none text-slate-700 font-medium"
-                  placeholder="Ex: Mãe ou Pai"
-                  value={newPatient.guardianName}
-                  onChange={(e) => setNewPatient({...newPatient, guardianName: e.target.value})}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase ml-2 mb-1 block">Nascimento</label>
-                  <input type="date" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:border-slate-800 outline-none text-slate-700" value={newPatient.birthDate} onChange={(e) => setNewPatient({...newPatient, birthDate: e.target.value})} />
-                </div>
-                <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase ml-2 mb-1 block">WhatsApp</label>
-                  <input type="text" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:border-slate-800 outline-none text-slate-700" placeholder="66 9..." value={newPatient.phone} onChange={(e) => setNewPatient({...newPatient, phone: e.target.value})} />
-                </div>
-              </div>
-            </div>
-            <div className="p-8 bg-slate-50 flex justify-end gap-3 border-t">
-              <button onClick={() => setShowAddModal(false)} className="px-6 py-3.5 text-slate-400 font-bold hover:text-slate-600">Cancelar</button>
-              <button onClick={handleAddPatient} className="px-8 py-3.5 bg-slate-800 text-white font-bold rounded-2xl shadow-lg transition-all active:scale-95">Salvar</button>
-            </div>
-          </div>
-        </div>
-      )}
-
+      {/* Delete Confirmation Modal */}
       {deleteModal.show && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 text-center animate-fade-in border border-slate-100">
-            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-100 shadow-sm"><AlertTriangle size={32}/></div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2">Remover Bebê?</h3>
-            <p className="text-sm text-slate-500 mb-8 leading-relaxed">Confirmar exclusão de <strong>{deleteModal.patientName}</strong>?</p>
-            <div className="flex gap-3">
-              <button onClick={() => setDeleteModal({show:false, patientId:null, patientName:''})} className="flex-1 py-3.5 text-slate-400 font-bold hover:bg-slate-50 rounded-2xl transition-colors">Não</button>
-              <button onClick={handleDeleteConfirmed} className="flex-1 py-3.5 bg-red-600 text-white font-bold rounded-2xl shadow-lg shadow-red-100 transition-all active:scale-95">Sim, Remover</button>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-100">
+                <div className="p-8 text-center">
+                    <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500 border border-red-100">
+                        <AlertTriangle size={32} />
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-800 mb-2">Remover Paciente?</h3>
+                    <p className="text-sm text-slate-500 mb-8 leading-relaxed">
+                        Tem certeza que deseja remover <strong>{deleteModal.patientName}</strong>? <br/>Essa ação não pode ser desfeita.
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                        <button 
+                            onClick={() => setDeleteModal({show: false, patientId: null, patientName: ''})} 
+                            className="px-6 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button 
+                            onClick={handleDeleteConfirmed} 
+                            className="px-6 py-2.5 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-lg shadow-red-100 transition-all"
+                        >
+                            Sim, Remover
+                        </button>
+                    </div>
+                </div>
             </div>
-          </div>
+        </div>
+      )}
+
+      {/* Check-in Date Modal */}
+      {checkInModal.show && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-100">
+                <div className="p-8">
+                    <div className="flex items-center space-x-4 mb-6">
+                        <div className="bg-blue-50 p-3 rounded-xl text-blue-600 border border-blue-100">
+                            <Calendar size={24} />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-800">Confirmar Presença</h3>
+                    </div>
+                    
+                    <p className="text-sm text-slate-500 mb-6 font-medium">
+                        Qual foi a data da consulta realizada?
+                    </p>
+
+                    <div className="mb-8">
+                        <label className="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">Data da Consulta</label>
+                        <input 
+                            type="date" 
+                            className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-slate-700 font-medium bg-white"
+                            value={checkInModal.date}
+                            onChange={(e) => setCheckInModal({...checkInModal, date: e.target.value})}
+                        />
+                    </div>
+
+                    <div className="flex gap-3 justify-end">
+                        <button 
+                            onClick={() => setCheckInModal({show: false, patientId: null, date: ''})} 
+                            className="px-6 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button 
+                            onClick={handleConfirmCheckIn} 
+                            className="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-lg shadow-blue-100 flex items-center transition-all"
+                        >
+                            Confirmar <ArrowRight size={18} className="ml-2" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      )}
+
+      {/* Add Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100">
+                <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <h3 className="font-bold text-xl text-slate-800">Novo Paciente</h3>
+                    <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors"><X size={24}/></button>
+                </div>
+                <div className="p-8 space-y-5">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">Nome Completo do Bebê</label>
+                        <input 
+                            type="text" 
+                            className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-slate-700 bg-white placeholder-slate-400"
+                            placeholder="Ex: Ana Clara"
+                            value={newPatient.name}
+                            onChange={e => setNewPatient({...newPatient, name: e.target.value})}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">Nome do Responsável</label>
+                        <input 
+                            type="text" 
+                            className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-slate-700 bg-white placeholder-slate-400"
+                            placeholder="Ex: Maria Silva (Mãe)"
+                            value={newPatient.guardianName}
+                            onChange={e => setNewPatient({...newPatient, guardianName: e.target.value})}
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">Nascimento</label>
+                            <input 
+                                type="date" 
+                                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-slate-700 bg-white"
+                                value={newPatient.birthDate}
+                                onChange={e => setNewPatient({...newPatient, birthDate: e.target.value})}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">Whatsapp</label>
+                            <input 
+                                type="text" 
+                                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-slate-700 bg-white placeholder-slate-400"
+                                placeholder="66 9999-9999"
+                                value={newPatient.phone}
+                                onChange={e => setNewPatient({...newPatient, phone: e.target.value})}
+                            />
+                        </div>
+                    </div>
+                </div>
+                <div className="px-8 py-6 bg-slate-50/50 flex justify-end gap-3 border-t border-slate-100">
+                    <button onClick={() => setShowAddModal(false)} className="px-6 py-2.5 text-sm font-bold text-slate-600 hover:bg-white rounded-lg transition-colors">Cancelar</button>
+                    <button onClick={handleAddPatient} className="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-lg shadow-blue-100 transition-all transform hover:scale-105">Salvar Cadastro</button>
+                </div>
+            </div>
         </div>
       )}
 
